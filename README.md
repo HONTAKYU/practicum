@@ -18,4 +18,7 @@ I temporarily put everything into my Github repo, if we have a public account, I
 
 Almost all reasons why this is complicate and we can't use `apt-get` to simple install everything are version issues.
 `juice-shop` requires `node.js` > 6.X
+
 Forgot which version of `nginx` required by modsecurity, but far more high than the one in ubuntu repo. Also, modsecurity requires to install with nginx together.
+
+One thing needs to be noticed is, we can't use docker as well for now, because installing Nginx with Modsecurity from source file requires to add `nginx.serivce` to `/lib/systemd/system/` and reload the daemon, this can't be done in docker as `/bin/bash` is PID 1, not `/sbin/init`. As far as I know, we have to use VM to run everything to fix this problem.
