@@ -28,9 +28,9 @@ cd rules/ \
 mv REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf \
 mv RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf \
 cd ../.. \
-mv ~/nginx.conf . \
-mv ~/modesec_includes.conf . \
-mv ~/nginx.service /lib/systemd/system/nginx/service \
+mv ~/practicum/nginx.conf . \
+mv ~/practicum/modesec_includes.conf . \
+mv ~/practicum/nginx.service /lib/systemd/system/nginx/service \
 ln -s /usr/local/nginx/sbin/nginx /bin/nginx \
 systemctl daemon-reload \
 
