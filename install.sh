@@ -9,7 +9,7 @@ wget https://nginx.org/download/nginx-1.13.5.tar.gz
 gunzip -c nginx-1.13.5.tar.gz | tar xvf - 
 
 wget https://www.modsecurity.org/tarball/2.9.2/modsecurity-2.9.2.tar.gz 
-gunzip -c modsecurity-2.9.2.tar.gz | tar xvf – 
+gunzip -c modsecurity-2.9.2.tar.gz | tar xvf -
 
 cd modsecurity-* 
 ./configure --enable-standalone-module 
