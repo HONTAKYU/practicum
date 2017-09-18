@@ -4,7 +4,7 @@
 set -ex
 apt-get update 
 apt-get upgrade 
-apt-get install vim git zlib1g-dev apache2-dev libcurl4-gnutls-dev libpcre3 libpcre3-dev autoconf libtool libxml2-dev libxml2 default-jre default-jdk 
+apt-get install sudo wget vim git zlib1g-dev apache2-dev libcurl4-gnutls-dev libpcre3 libpcre3-dev autoconf libtool libxml2-dev libxml2 default-jre default-jdk 
 
 #Download nginx and modsecurity source files
 wget https://nginx.org/download/nginx-1.13.5.tar.gz 
@@ -51,5 +51,4 @@ apt-get install -y nodejs
 git clone https://github.com/bkimminich/juice-shop.git
 cd juice-shop
 npm install
-npm start
 
