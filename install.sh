@@ -1,11 +1,13 @@
 #!/bin/bash
 
+set -ex
 apt-get update 
 apt-get upgrade 
-apt-get install git zlib1g-dev apache2-dev libcurl4-gnutls-dev libpcre3 libpcre3-dev autoconf libtool libxml2-dev libxml2 default-jre default-jdk 
+apt-get install vim git zlib1g-dev apache2-dev libcurl4-gnutls-dev libpcre3 libpcre3-dev autoconf libtool libxml2-dev libxml2 default-jre default-jdk 
 
 wget https://nginx.org/download/nginx-1.13.5.tar.gz 
 gunzip -c nginx-1.13.5.tar.gz | tar xvf - 
+
 wget https://www.modsecurity.org/tarball/2.9.2/modsecurity-2.9.2.tar.gz 
 gunzip -c modsecurity-2.9.2.tar.gz | tar xvf – 
 
