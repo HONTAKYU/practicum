@@ -1,18 +1,19 @@
-##Setup, required Ubuntu 16.x
+## Setup, required Ubuntu 16.x
 
-First you must clone this to your home folder, or you need to modify `install.sh` line 35~37 to your corresponding directories.
+1. You must clone this to your home folder, or you need to modify `install.sh` line 35~37 to your corresponding directories.
 
 `sudo git clone https://github.com/HONTAKYU/practicum.git`
 
-Go into the cloned folder with `cd practicum`
+2. Go into the cloned folder with `cd practicum`
 
-Change `install.sh` to executable file `chmod +x install.sh`
+3. Change `install.sh` to executable file `chmod +x install.sh`
 
-Install everything (we have Nginx, openWAF, CRS rules, Webgoat, Juice-shop for now) `sudo ./install.sh`
+4. Install everything (we have Nginx, openWAF, CRS rules, Webgoat, Juice-shop for now) `sudo ./install.sh`
 
 I didn't delete installation files, they are located in `~/practicum/` (if you didn't change the location)
 
-##Note
+## Note
+
 I temporarily put everything into my Github repo, if we have a public account, I would like to move everything to there.
 
 Almost all reasons why this is complicate and we can't use `apt-get` to simple install everything are version issues.
