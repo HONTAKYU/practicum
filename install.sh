@@ -45,5 +45,11 @@ systemctl start nginx
 cd ../.. 
 wget https://github.com/WebGoat/WebGoat/releases/download/7.1/webgoat-container-7.1-exec.jar 
 
-#download juiceshop
+#download node.js v8, npm and juiceshop
+curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+apt-get install -y nodejs
+git clone https://github.com/bkimminich/juice-shop.git
+cd juice-shop
+npm install
+npm start
 
