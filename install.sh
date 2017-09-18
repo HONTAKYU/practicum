@@ -1,16 +1,18 @@
 #!/bin/bash
 
+#install necessary libs
 set -ex
 apt-get update 
 apt-get upgrade 
 apt-get install vim git zlib1g-dev apache2-dev libcurl4-gnutls-dev libpcre3 libpcre3-dev autoconf libtool libxml2-dev libxml2 default-jre default-jdk 
 
+#Download nginx and modsecurity source files
 wget https://nginx.org/download/nginx-1.13.5.tar.gz 
 gunzip -c nginx-1.13.5.tar.gz | tar xvf - 
-
 wget https://www.modsecurity.org/tarball/2.9.2/modsecurity-2.9.2.tar.gz 
 gunzip -c modsecurity-2.9.2.tar.gz | tar xvf -
 
+#install nginx with modsecurity and openWAF CRS
 cd modsecurity-* 
 ./configure --enable-standalone-module 
 make 
@@ -31,14 +33,17 @@ mv REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example REQUEST-900-EXCLUSION-RUL
 mv RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf 
 cd ../.. 
 mv ~/practicum/nginx.conf . 
-mv ~/practicum/modesec_includes.conf . 
-mv ~/practicum/nginx.service /lib/systemd/system/nginx/service 
+mv ~/practicum/modsec_includes.conf . 
+mv ~/practicum/nginx.service /lib/systemd/system/ 
+
+#start nginx service
 ln -s /usr/local/nginx/sbin/nginx /bin/nginx 
 systemctl daemon-reload 
+systemctl start nginx
 
 #download webgoat
 cd ../.. 
 wget https://github.com/WebGoat/WebGoat/releases/download/7.1/webgoat-container-7.1-exec.jar 
 
-
+#download juiceshop
 
