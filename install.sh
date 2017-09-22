@@ -12,7 +12,7 @@ gunzip -c nginx-1.13.5.tar.gz | tar xvf -
 wget https://www.modsecurity.org/tarball/2.9.2/modsecurity-2.9.2.tar.gz 
 gunzip -c modsecurity-2.9.2.tar.gz | tar xvf -
 
-#install nginx with modsecurity and openWAF CRS
+#install nginx with modsecurity openWAF and CRS
 cd modsecurity-* 
 ./configure --enable-standalone-module 
 make 
@@ -45,10 +45,17 @@ systemctl start nginx
 cd ../.. 
 wget https://github.com/WebGoat/WebGoat/releases/download/7.1/webgoat-container-7.1-exec.jar 
 
-#download node.js v8, npm and juiceshop
+# download node.js v8, npm (not necessary needed for now), docker and juiceshop
+# start juice-shop in backgroud on port 3000
+
 curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
 apt-get install -y nodejs
-git clone https://github.com/bkimminich/juice-shop.git
-cd juice-shop
-npm install
+apt install docker.io
+service docker start
+docker pull bkimminich/juice-shop
+docker run -d -p 3000:3000 bkimminich/juice-shop
+
+
+
+
 
