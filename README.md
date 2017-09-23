@@ -6,9 +6,9 @@
 
 2. Go into the cloned folder with `cd practicum`
 
-3. Change `install.sh` to executable file `chmod +x install.sh`
+3. Change `install_with_WAF_v3.sh` to executable file `chmod +x install_with_WAF_v3.sh`
 
-4. Install everything (we have Nginx, openWAF, CRS rules, Webgoat, Juice-shop for now) `sudo ./install.sh`
+4. Install everything (we have Nginx, openWAF, CRS rules, Webgoat, docker, Juice-shop for now) `sudo ./install_with_WAF_v3.sh`
 
 I didn't delete installation files, they are located in `~/practicum/` (if you didn't change the location)
 
