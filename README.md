@@ -3,37 +3,32 @@
 ### WAF
 
 * Modsecurity v3, CRS with Nginx v1.13.x
-
-----
+---
 	
-	1. You must clone this to your home folder, or you need to modify `modsecurity_v3.sh` line 55~57 to your corresponding directories.
+   1. You must clone this to your home folder, or you need to modify `modsecurity_v3.sh` line 55~57 to your corresponding directories.
 
-	`sudo git clone https://github.com/HONTAKYU/practicum.git`
+   `sudo git clone https://github.com/HONTAKYU/practicum.git`
 
-	2. Go into the cloned folder with `cd practicum`
+   2. Go into the cloned folder with `cd practicum`
 
-	3. Change `modsecurity_v3.sh` to executable file `chmod +x modsecurity_v3.sh`
+   3. Change `modsecurity_v3.sh` to executable file `chmod +x modsecurity_v3.sh`
 
-	4. Install everything (we have Nginx, openWAF, CRS rules, Webgoat, docker, Juice-shop for now) `sudo ./modsecurity_v3.sh`
+   4. Install everything (we have Nginx, openWAF, CRS rules, Webgoat, docker, Juice-shop for now) `sudo ./modsecurity_v3.sh`
 
-	5. Approach to get into juice-shop docker container:
-		`sudo docker exec -it 7a38390c602a sh`
+   5. Approach to get into juice-shop docker container: `sudo docker exec -it 7a38390c602a sh`
 
-	Source file location:`/usr/local/nginx/`
+   Source file location:`/usr/local/nginx/`
 
 ### RASP
 
 * Sqreen with Nginx v1.10.x
-
 ---
 
-	1. Approach to get into juice-shop docker container:
-		`sudo docker exec -it 654ab472f7af sh`
-	
-	2. TODO
+   1. Approach to get into juice-shop docker container: `sudo docker exec -it 654ab472f7af sh`
 
-	Source file location:`/etc/nginx/`
+   2. TODO
 
+   Source file location:`/etc/nginx/`
 
 # Instance Location
 
