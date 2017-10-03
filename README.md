@@ -3,6 +3,7 @@
 ### WAF
 
 * Modsecurity v3, CRS with Nginx v1.13.x
+
 ----
 	
 	1. You must clone this to your home folder, or you need to modify `modsecurity_v3.sh` line 55~57 to your corresponding directories.
@@ -18,11 +19,12 @@
 	5. Approach to get into juice-shop docker container:
 		`sudo docker exec -it 7a38390c602a sh`
 
-Source file location:`/usr/local/nginx/`
+	Source file location:`/usr/local/nginx/`
 
 ### RASP
 
 * Sqreen with Nginx v1.10.x
+
 ---
 
 	1. Approach to get into juice-shop docker container:
@@ -30,7 +32,7 @@ Source file location:`/usr/local/nginx/`
 	
 	2. TODO
 
-Source file location:`/etc/nginx/`
+	Source file location:`/etc/nginx/`
 
 
 # Instance Location
