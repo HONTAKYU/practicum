@@ -24,9 +24,19 @@
 * Sqreen with Nginx v1.10.x
 ---
 
-   1. Approach to get into juice-shop docker container: `sudo docker exec -it 654ab472f7af sh`
+   1. get inside the docker container using `sudo docker exec -it container-name sh`
 
-   2. TODO
+   2. run the command to install sqreen: `npm install --save sqreen`
+   
+   3. put the sqreen token in sqreen.json, this token is generated on the dashboard and is unique for every app that you want to monitor, so
+   	3.1 first add a new app on the sqreen dashboard
+	3.2 a token will be generated, save this token using the command `echo '{ "token": "mysecrettoken" }' > sqreen.json` where mysecrettoken is the unique token of each app registered on sqreen
+   
+   4. edit server.js `vi server.js` and add the line at the top of the script `const sqreen=require('sqreen')`
+   
+   5. exit the container and restart the container `sudo docker restart container-name`
+   
+   Note: to see all running and stopped docker images use the command `sudo docker ps --all`
 
    Source file location:`/etc/nginx/`
 
