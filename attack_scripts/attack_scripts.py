@@ -13,10 +13,11 @@ import sys
 #4. Print out the response status code
 #5. Print out the [msg: ] part in the new audit log file
 
-print("Which WAF do you want to test?\nEnter 'modsecurity' or :")
+print("Which WAF do you want to test?\nEnter 'modsecurity' or 'aws_waf':")
 WAF_NAME = raw_input()
 #URLs for our WAF instances
 mod_url = 'http://54.183.15.129:80'
+aws_url = 'http://34.215.46.242:80'
 
 #Logs extraction regex
 mod_rd_log = "sudo cat /usr/local/nginx/conf/logs/modsec_audit.log"
@@ -40,6 +41,17 @@ valid = 0
 
 if WAF_NAME == "modsecurity" :
     jsurl = mod_url
+    rd_log = mod_rd_log
+    sql_regex = mod_sql_regex
+    xss_regex = mod_xss_regex
+    normal_regex = mod_normal_regex
+    rm_log = mod_rm_log
+    rs_nginx = mod_rs_nginx
+    log_name = 'mod_test_results.csv'
+    valid = 1
+
+if WAF_NAME == "aws_waf" :
+    jsurl = aws_url
     rd_log = mod_rd_log
     sql_regex = mod_sql_regex
     xss_regex = mod_xss_regex
