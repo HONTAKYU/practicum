@@ -17,6 +17,66 @@
 
    Nginx location:`/usr/local/nginx/`
 
+* Amazon WAF
+1. Create a new EC2 instance
+2. Execute the following commands to set up nginx, docker and Juiceshop
+	set -ex
+
+	#INSTALL NGINX
+	#edit /etc/apt/sources.list and add the following:
+		deb http://nginx.org/packages/ubuntu/ trusty nginx
+		deb-src http://nginx.org/packages/ubuntu/ trusty nginx
+
+	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ABF5BD827BD9BF62
+	sudo apt-get update
+	sudo apt-get install nginx
+
+	#INSTALL DOCKER
+	sudo apt-get install \
+	    linux-image-extra-$(uname -r) \
+	    linux-image-extra-virtual
+
+	sudo apt-get install \
+	    apt-transport-https \
+	    ca-certificates \
+	    curl \
+	    software-properties-common
+	curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+	sudo add-apt-repository \
+	   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+	   $(lsb_release -cs) \
+	   stable"
+	sudo apt-get update
+	sudo apt-get install docker-ce
+
+	#INSTALL JUICESHOP
+	sudo docker pull bkimminich/juice-shop
+	sudo docker run -d -p 3000:3000 bkimminich/juice-shop
+
+	#TO SET UP REVERSE PROXY
+	#Edit the /etc/nginx/nginx.conf file and add this to the http{} section
+	server {
+		gzip_types text/plain text/css application/json application/x-javascript
+		       text/xml application/xml application/xml+rss text/javascript;
+		server_name 34.215.46.242;
+		listen 80;
+		location / {
+			proxy_pass http://34.215.46.242:3000;
+		}
+	}
+
+	#RESTART NGINX
+	sudo service nginx restart
+
+3. Create another new EC2 instance (this time, set it to a different subnet in your VPC)
+4. Do the same commands as step 2
+5. Create an Application Load Balancer, using the 2 instances as targets with target port 3000
+6. Create a WebACL
+7. Create 2 rules - SQLi and XSS - include filters in the rules
+8. Assign the rules to the WebACL
+9. Associate the Application Load Balancer to the WebACL
+
 ### RASP
 ---
 
@@ -76,7 +136,9 @@
 |---------------|:-------------:|------:|
 |Modsecurity 	|54.183.15.129	|80		|
 |Sqreen			|54.218.116.227	|3000	|
-|AWS WAF        |34.215.46.242  |80     |
+|AWS Instance 1	|34.215.46.242  |80     |
+|AWS Instance 2	|52.26.227.232	|80	|
+|AWS LoadBalancer|JuiceshopLB-767588180.us-west-2.elb.amazonaws.com|80	|
 |Contrast Security|54.85.15.24  |80     |
 |F5				|TODO			|TODO	|
 
