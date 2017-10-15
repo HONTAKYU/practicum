@@ -42,33 +42,33 @@
 
 * Contrast Security with Nginx v1.10.x
 
-1. Clone our project to your home folder `sudo git clone https://github.com/HONTAKYU/practicum.git`
+   1. Clone our project to your home folder `sudo git clone https://github.com/HONTAKYU/practicum.git`
 
-2. Go into the cloned folder with `cd practicum`
+   2. Go into the cloned folder with `cd practicum`
 
-3. Install Nginx, docker and juice-shop with `sudo ./RASP.sh`
+   3. Install Nginx, docker and juice-shop with `sudo ./RASP.sh`
 
-4. Download `contrast.json` and `node-contrast-x.x.x.tgz` from Contrast security website.
+   4. Download `contrast.json` and `node-contrast-x.x.x.tgz` from Contrast security website.
 
-5. Transfer two files to the instance:
+   5. Transfer two files to the instance:
 	`scp -i contrast_security.pem contrast.json ubuntu@54.183.15.129:~/`
 	`scp -i contrast_security.pem node_contrast-* ubuntu@54.183.15.129:~/`
 
-6. Copy two files to docker container 
+   6. Copy two files to docker container 
 	`sudo docker cp contrast.json <container-name>:/juice-shop/`
 	`sudo docker cp node_contrast-* <container-name>:/juice-shop/`
 
-7. get inside the docker container using `sudo docker exec -it <container-name> sh`
+   7. get inside the docker container using `sudo docker exec -it <container-name> sh`
 
-8. In the container, install contrast agent with `npm install node-contrast-*`
+   8. In the container, install contrast agent with `npm install node-contrast-*`
 
-9. Modify line 129 of `package.json` to `"start": "./node_modules/node_contrast/cli.js server.js && node app",`
+   9. Modify line 129 of `package.json` to `"start": "./node_modules/node_contrast/cli.js server.js && node app",`
 
-10. restart Docker container `sudo docker restart <container-name>` 
+   10. restart Docker container `sudo docker restart <container-name>` 
 
-You should be able to see contrast agent is running on Contrast security website.
+   You should be able to see contrast agent is running on Contrast security website.
 
-Nginx location:`/etc/nginx/`
+   Nginx location:`/etc/nginx/`
 
 # Instance Location
 
