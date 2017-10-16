@@ -4,6 +4,9 @@ import os
 import time
 import urllib2
 import sys
+import socket
+import subprocess
+from datetime import datetime
 
 ##############################################################################################################
 #Configurations
@@ -23,6 +26,7 @@ aws_url = 'http://34.215.46.242:80'
 mod_rd_log = "sudo cat /usr/local/nginx/conf/logs/modsec_audit.log"
 mod_sql_regex = "| grep 942 | grep -o -P '\[msg.*?\]'"
 mod_xss_regex = "| grep 941 | grep -o -P '\[msg.*?\]'"
+mod_sql_leakage_regex = "| grep 951 | grep -o -P '\[msg.*?\]'"
 mod_normal_regex = "| grep -o -P '\[msg.*?\]'"
 
 #Logs refreshing commands
@@ -31,34 +35,34 @@ mod_rs_nginx = "sudo service nginx restart"
 
 #Filling in parameters
 jsurl = ""
+instance_ip = ""
 rd_log = ""
 sql_regex = ""
 xss_regex = ""
+format_string_regex = ""
 normal_regex = ""
 rm_log = ""
 rs_nginx = ""
 valid = 0
 
 if WAF_NAME == "modsecurity" :
+    #url
     jsurl = mod_url
+    #read log syntax
     rd_log = mod_rd_log
+    #4 different types of logs
     sql_regex = mod_sql_regex
     xss_regex = mod_xss_regex
+    format_string_regex = mod_normal_regex
     normal_regex = mod_normal_regex
+    #log removal syntax
     rm_log = mod_rm_log
+    #restart nginx
     rs_nginx = mod_rs_nginx
     log_name = 'mod_test_results.csv'
     valid = 1
 
 if WAF_NAME == "aws_waf" :
-    jsurl = aws_url
-    rd_log = mod_rd_log
-    sql_regex = mod_sql_regex
-    xss_regex = mod_xss_regex
-    normal_regex = mod_normal_regex
-    rm_log = mod_rm_log
-    rs_nginx = mod_rs_nginx
-    log_name = 'mod_test_results.csv'
     valid = 1
 
 if valid == 0:
@@ -296,14 +300,62 @@ for query in query_list:
     login = requests.get(jsurl,params=payload)
     print("XSS TC%d - response status_code: %d"%(xss_num_tc,login.status_code))
     time.sleep(0.5)
-    logs = os.popen(rd_log+mod_xss_regex).read()
+    logs = os.popen(rd_log+xss_regex).read()
     print("Logs:%s"%(logs))
     c_logs = logs.replace('\n',' ')
     f.write('TC%d,%d,%s\n'%(xss_num_tc,login.status_code, c_logs))
 
 
 ##################################################################################################################
-#Part 3: Normal Traffic Testing
+#Part 3: Format String Overflow 
+print("##################Format String Testing###################")
+
+#Record testing results into a file
+f.write('Format String, Status_Code, Logs\n')
+#number of sqli test cases
+format_string_num_tc = 0
+
+format_query_list = []
+format_query_list.append('apple%x.%x.%x') # TC1
+format_query_list.append('apple%s.%s.%s') # TC2
+format_query_list.append('apple%05d.%05d.%05d') # TC3
+format_query_list.append('apple%5.2f.%5.2f.%5.2f') # TC4
+format_query_list.append('apple%d.%d.%d') # TC5
+format_query_list.append('apple%2$d') # TC6
+format_query_list.append('apple%hh') # TC7
+format_query_list.append('apple%h') # TC8
+format_query_list.append('apple%l') # TC9
+format_query_list.append('apple%L') # TC10
+format_query_list.append('apple%z') # TC11
+format_query_list.append('apple%t') # TC12
+format_query_list.append('apple%g') # TC13
+format_query_list.append('apple%F.%F') # TC14
+format_query_list.append('apple%X.%X') # TC15
+format_query_list.append('apple%o.%o') # TC16
+format_query_list.append('apple%n') # TC17
+format_query_list.append('apple%a') # TC18
+format_query_list.append('apple%A') # TC19
+format_query_list.append('apple%p') # TC20
+format_query_list.append('apple%c.%c.%c.%c') # TC21
+
+#Run the get queries one by one and record the logs
+for query in format_query_list:
+    format_string_num_tc  = format_string_num_tc  + 1
+    os.system(rm_log)
+    os.system(rs_nginx)
+    payload = {'q': query}
+    login = requests.get(jsurl,params=payload)
+    print("Format String TC%d - response status_code: %d"%(format_string_num_tc,login.status_code))
+    time.sleep(0.5)
+    logs = os.popen(rd_log+format_string_regex).read()
+    print("Logs:%s"%(logs))
+    c_logs = logs.replace('\n',' ')
+    f.write('TC%d,%d,%s\n'%(format_string_num_tc ,login.status_code, c_logs))
+
+
+
+##################################################################################################################
+#Part 4: Normal Traffic Testing
 print("")
 print("##################Normal Traffic Testing###################")
 
@@ -415,7 +467,7 @@ for query in normal_query_list:
     login = requests.get(jsurl,params=payload)
     print("Normal TC%d - response status_code: %d"%(normal_num_tc,login.status_code))
     time.sleep(0.5)
-    logs = os.popen(rd_log+mod_normal_regex).read()
+    logs = os.popen(rd_log+normal_regex).read()
     print("Logs:%s"%(logs))
     c_logs = logs.replace('\n',' ')
     f.write('TC%d,%d,%s\n'%(normal_num_tc,login.status_code, c_logs))
@@ -432,11 +484,14 @@ for index, query in enumerate(normal_username_list):
                      data=auth)
     print("Normal TC%d - response status_code: %d"%(normal_num_tc,login.status_code))
     time.sleep(0.5)
-    logs = os.popen(rd_log+mod_normal_regex).read()
+    logs = os.popen(rd_log+normal_regex).read()
     print("Logs:%s"%(logs))
     c_logs = logs.replace('\n',' ')
     f.write('TC%d,%d,%s\n'%(normal_num_tc,login.status_code, c_logs))
 
-
+#Close the .csv file
 f.close()
+
+#End of testing
+print("Testing End...")
 
