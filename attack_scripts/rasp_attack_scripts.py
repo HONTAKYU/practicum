@@ -71,6 +71,7 @@ if RASP_NAME == "sqreen" :
     valid = 1
 
 if RASP_NAME == "contrast_security" :
+	jsurl = contrast_url
     valid = 1
     sys.exit()
 

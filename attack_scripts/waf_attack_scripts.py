@@ -18,6 +18,13 @@ from datetime import datetime
 
 print("Which WAF do you want to test?\nEnter 'modsecurity' or 'aws_waf':")
 WAF_NAME = raw_input()
+
+#Check if there any log 
+print("Any Logs to capture?\nEnter 'YES' or 'NO':")
+LOGS = raw_input()
+if (LOGS != "YES") and (LOGS != "NO"):
+    sys.exit()
+
 #URLs for our WAF instances
 mod_url = 'http://54.183.15.129:80'
 aws_url = 'http://34.215.46.242:80'
@@ -63,20 +70,23 @@ if WAF_NAME == "modsecurity" :
     valid = 1
 
 if WAF_NAME == "aws_waf" :
+    jsurl = aws_url
     valid = 1
 
 if valid == 0:
     print("Invalid WAF name")
     sys.exit()
 
-f = open(log_name, 'w')
+if LOGS == "YES":
+    f = open(log_name, 'w')
 
 ##################################################################################################################
 #Part 1: SQLi Testing
 print("##################SQLi Testing###################")
 
 #Record testing results into a file
-f.write('SQL Test Cases, Status_Code, Logs\n')
+if LOGS == "YES":
+    f.write('SQL Test Cases, Status_Code, Logs\n')
 #number of sqli test cases
 sql_num_tc = 0
 
@@ -153,22 +163,25 @@ sqlpost_password_list.append("' 1 and 1 = 1")
 #Run the get queries one by one and record the logs
 for query in sqlget_query_list:
     sql_num_tc = sql_num_tc + 1
-    os.system(rm_log)
-    os.system(rs_nginx)
+    if LOGS == "YES":
+        os.system(rm_log)
+        os.system(rs_nginx)
     payload = {'q': query}
     login = requests.get(jsurl,params=payload)
     print("SQL TC%d - response status_code: %d"%(sql_num_tc,login.status_code))
     time.sleep(0.5)
-    logs = os.popen(rd_log+sql_regex).read()
-    print("Logs:%s"%(logs))
-    c_logs = logs.replace('\n',' ')
-    f.write('TC%d,%d,%s\n'%(sql_num_tc,login.status_code, c_logs))
+    if LOGS == "YES":
+        logs = os.popen(rd_log+sql_regex).read()
+        print("Logs:%s"%(logs))
+        c_logs = logs.replace('\n',' ')
+        f.write('TC%d,%d,%s\n'%(sql_num_tc,login.status_code, c_logs))
 
 #Then, run the post queries one by one and record the logs
 for index, query in enumerate(sqlpost_username_list):
     sql_num_tc = sql_num_tc + 1
-    os.system(rm_log)
-    os.system(rs_nginx)
+    if LOGS == "YES":
+        os.system(rm_log)
+        os.system(rs_nginx)
     session = requests.Session()
     auth = json.dumps({'email': sqlpost_username_list[index], 'password': sqlpost_password_list[index]})
     login = session.post('{}/rest/user/login'.format(jsurl),
@@ -176,10 +189,11 @@ for index, query in enumerate(sqlpost_username_list):
                      data=auth)
     print("SQL TC%d - response status_code: %d"%(sql_num_tc,login.status_code))
     time.sleep(0.5)
-    logs = os.popen(rd_log+sql_regex).read()
-    print("Logs:%s"%(logs))
-    c_logs = logs.replace('\n',' ')
-    f.write('TC%d,%d,%s\n'%(sql_num_tc,login.status_code, c_logs))
+    if LOGS == "YES":
+        logs = os.popen(rd_log+sql_regex).read()
+        print("Logs:%s"%(logs))
+        c_logs = logs.replace('\n',' ')
+        f.write('TC%d,%d,%s\n'%(sql_num_tc,login.status_code, c_logs))
 
 
 
@@ -192,7 +206,8 @@ print("##################XSS Testing###################")
 xss_num_tc = 0
 
 #Record testing results into a file
-f.write('XSS Test Cases, Status_Code, Logs\n')
+if LOGS == "YES":
+    f.write('XSS Test Cases, Status_Code, Logs\n')
 
 #XSS query list
 query_list = []
@@ -242,7 +257,7 @@ query_list.append('%3CBODY%20BACKGROUND%3D%22javascript:alert(\'XSS\')%22%3E') #
 query_list.append('%3CIMG%20DYNSRC%3D%22javascript:alert(\'XSS\')%22%3E') # TC44
 query_list.append('%3CIMG%20LOWSRC%3D%22javascript:alert(\'XSS\')%22%3E') # TC45
 query_list.append('%3CIMG%20SRC%3D\'vbscript:msgbox(%22XSS%22)\'%3E') # TC46
-query_list.append('%3Csvg%2Fonload%3Dalert(\'XSS\')%3E') # TC37
+query_list.append('%3Csvg%2Fonload%3Dalert(\'XSS\')%3E') # TC47
 query_list.append('Set.constructor%60alert%5Cx28document.domain%5Cx29%60%60%60') # TC48
 query_list.append('%3CBODY%20ONLOAD%3Dalert(\'XSS\')%3E')  # TC49
 query_list.append('3CBGSOUND%20SRC%3D%22javascript:alert(\'XSS\');%22%3E') # TC50          
@@ -294,16 +309,18 @@ query_list.append('%3CA%20HREF%3D%22%2F%2Fwww.google.com%2F%22%3EXSS%3C%2FA%3E')
 #Run the get queries one by one and record the logs
 for query in query_list:
     xss_num_tc = xss_num_tc + 1
-    os.system(rm_log)
-    os.system(rs_nginx)
+    if LOGS == "YES":
+        os.system(rm_log)
+        os.system(rs_nginx)
     payload = {'q': query}
     login = requests.get(jsurl,params=payload)
     print("XSS TC%d - response status_code: %d"%(xss_num_tc,login.status_code))
     time.sleep(0.5)
-    logs = os.popen(rd_log+xss_regex).read()
-    print("Logs:%s"%(logs))
-    c_logs = logs.replace('\n',' ')
-    f.write('TC%d,%d,%s\n'%(xss_num_tc,login.status_code, c_logs))
+    if LOGS == "YES":
+        logs = os.popen(rd_log+xss_regex).read()
+        print("Logs:%s"%(logs))
+        c_logs = logs.replace('\n',' ')
+        f.write('TC%d,%d,%s\n'%(xss_num_tc,login.status_code, c_logs))
 
 
 ##################################################################################################################
@@ -311,7 +328,8 @@ for query in query_list:
 print("##################Format String Testing###################")
 
 #Record testing results into a file
-f.write('Format String, Status_Code, Logs\n')
+if LOGS == "YES":
+    f.write('Format String, Status_Code, Logs\n')
 #number of sqli test cases
 format_string_num_tc = 0
 
@@ -341,16 +359,18 @@ format_query_list.append('apple%c.%c.%c.%c') # TC21
 #Run the get queries one by one and record the logs
 for query in format_query_list:
     format_string_num_tc  = format_string_num_tc  + 1
-    os.system(rm_log)
-    os.system(rs_nginx)
+    if LOGS == "YES":
+        os.system(rm_log)
+        os.system(rs_nginx)
     payload = {'q': query}
     login = requests.get(jsurl,params=payload)
     print("Format String TC%d - response status_code: %d"%(format_string_num_tc,login.status_code))
     time.sleep(0.5)
-    logs = os.popen(rd_log+format_string_regex).read()
-    print("Logs:%s"%(logs))
-    c_logs = logs.replace('\n',' ')
-    f.write('TC%d,%d,%s\n'%(format_string_num_tc ,login.status_code, c_logs))
+    if LOGS == "YES":
+        logs = os.popen(rd_log+format_string_regex).read()
+        print("Logs:%s"%(logs))
+        c_logs = logs.replace('\n',' ')
+        f.write('TC%d,%d,%s\n'%(format_string_num_tc ,login.status_code, c_logs))
 
 
 
@@ -363,7 +383,8 @@ print("##################Normal Traffic Testing###################")
 normal_num_tc = 0
 
 #Record testing results into a file
-f.write('Normal Test Cases, Status_Code, Logs\n')
+if LOGS == "YES":
+    f.write('Normal Test Cases, Status_Code, Logs\n')
 
 #Normal GET query list
 normal_query_list = []
@@ -461,22 +482,25 @@ normal_password_list.append('script')
 #Run the get queries one by one and record the logs
 for query in normal_query_list:
     normal_num_tc = normal_num_tc + 1
-    os.system(rm_log)
-    os.system(rs_nginx)
+    if LOGS == "YES":
+        os.system(rm_log)
+        os.system(rs_nginx)
     payload = {'q': query}
     login = requests.get(jsurl,params=payload)
     print("Normal TC%d - response status_code: %d"%(normal_num_tc,login.status_code))
     time.sleep(0.5)
-    logs = os.popen(rd_log+normal_regex).read()
-    print("Logs:%s"%(logs))
-    c_logs = logs.replace('\n',' ')
-    f.write('TC%d,%d,%s\n'%(normal_num_tc,login.status_code, c_logs))
+    if LOGS == "YES":
+        logs = os.popen(rd_log+normal_regex).read()
+        print("Logs:%s"%(logs))
+        c_logs = logs.replace('\n',' ')
+        f.write('TC%d,%d,%s\n'%(normal_num_tc,login.status_code, c_logs))
 
 #Then, run the post queries one by one and record the logs
 for index, query in enumerate(normal_username_list):
     normal_num_tc = normal_num_tc + 1
-    os.system(rm_log)
-    os.system(rs_nginx)
+    if LOGS == "YES":
+        os.system(rm_log)
+        os.system(rs_nginx)
     session = requests.Session()
     auth = json.dumps({'email': normal_username_list[index], 'password': normal_password_list[index]})
     login = session.post('{}/rest/user/login'.format(jsurl),
@@ -484,13 +508,15 @@ for index, query in enumerate(normal_username_list):
                      data=auth)
     print("Normal TC%d - response status_code: %d"%(normal_num_tc,login.status_code))
     time.sleep(0.5)
-    logs = os.popen(rd_log+normal_regex).read()
-    print("Logs:%s"%(logs))
-    c_logs = logs.replace('\n',' ')
-    f.write('TC%d,%d,%s\n'%(normal_num_tc,login.status_code, c_logs))
+    if LOGS == "YES":
+        logs = os.popen(rd_log+normal_regex).read()
+        print("Logs:%s"%(logs))
+        c_logs = logs.replace('\n',' ')
+        f.write('TC%d,%d,%s\n'%(normal_num_tc,login.status_code, c_logs))
 
 #Close the .csv file
-f.close()
+if LOGS == "YES":
+    f.close()
 
 #End of testing
 print("Testing End...")
