@@ -35,6 +35,7 @@ mod_sql_regex = "| grep 942 | grep -o -P '\[msg.*?\]'"
 mod_xss_regex = "| grep 941 | grep -o -P '\[msg.*?\]'"
 mod_sql_leakage_regex = "| grep 951 | grep -o -P '\[msg.*?\]'"
 mod_normal_regex = "| grep -o -P '\[msg.*?\]'"
+mod_rfi_regex = "| grep 931 | grep -o -P '\[msg.*?\]'"
 
 #Logs refreshing commands
 mod_rm_log = "sudo rm /usr/local/nginx/conf/logs/modsec_audit.log"
@@ -47,6 +48,8 @@ rd_log = ""
 sql_regex = ""
 xss_regex = ""
 format_string_regex = ""
+file_traversal_regex = ""
+sqli_leakage_regex = ""
 normal_regex = ""
 rm_log = ""
 rs_nginx = ""
@@ -57,11 +60,13 @@ if WAF_NAME == "modsecurity" :
     jsurl = mod_url
     #read log syntax
     rd_log = mod_rd_log
-    #4 different types of logs
+    #6 different types of logs
     sql_regex = mod_sql_regex
     xss_regex = mod_xss_regex
     format_string_regex = mod_normal_regex
+    file_traversal_regex = mod_rfi_regex
     normal_regex = mod_normal_regex
+    sqli_leakage_regex = mod_sql_leakage_regex
     #log removal syntax
     rm_log = mod_rm_log
     #restart nginx
@@ -373,9 +378,76 @@ for query in format_query_list:
         f.write('TC%d,%d,%s\n'%(format_string_num_tc ,login.status_code, c_logs))
 
 
+##################################################################################################################
+#Part 4: RFI
+print("##################Remote File Inclusion###################")
+
+#Record testing results into a file
+if LOGS == "YES":
+    f.write('Remote File Inclusion, Status_Code, Logs\n')
+#number of sqli test cases
+file_traversal_num_tc = 0
+
+file_traversal_list = []
+file_traversal_list.append('/var/www/html/get.php') # TC1
+file_traversal_list.append('/etc/passwd') # TC2
+file_traversal_list.append('/usr/local/bin/nginx/conf/nginx.conf') # TC3
+file_traversal_list.append('../../../../etc/passwd') # TC4
+file_traversal_list.append('../../../etc/shadow') # TC5
+
+#Run the get queries one by one and record the logs
+for query in file_traversal_list:
+    file_traversal_num_tc  = file_traversal_num_tc  + 1
+    if LOGS == "YES":
+        os.system(rm_log)
+        os.system(rs_nginx)
+    payload = {'q': query}
+    login = requests.get(jsurl,params=payload)
+    print("Remote File Inclusion TC%d - response status_code: %d"%(file_traversal_num_tc,login.status_code))
+    time.sleep(0.5)
+    if LOGS == "YES":
+        logs = os.popen(rd_log + file_traversal_regex).read()
+        print("Logs:%s"%(logs))
+        c_logs = logs.replace('\n',' ')
+        f.write('TC%d,%d,%s\n'%(file_traversal_num_tc, login.status_code, c_logs))
+
+'''
+##################################################################################################################
+#Part 5: SQLi Leakage
+print("##################Sqli Leakage Testing###################")
+
+#Record testing results into a file
+if LOGS == "YES":
+    f.write('SQLi Leakage, Status_Code, Logs\n')
+#number of sqli test cases
+sqli_leakage_num_tc = 0
+
+sqli_leakage_list = []
+sqli_leakage_list.append('invalid\')) UNION SELECT NULL,email,email,id,NULL,NULL,NULL,NULL FROM USERS--') # TC1
+sqli_leakage_list.append('banana\' ORDER BY 100--') # TC2
+sqli_leakage_list.append('banana\' AND \'1\'=\'2') # TC3
+sqli_leakage_list.append('invalid\')) UNION SELECT 1,2,3 FROM USERS--') # TC4
+sqli_leakage_list.append('invalid\')) UNION SELECT 1,2,3 FROM WHOCARES--') # TC5
+
+#Run the get queries one by one and record the logs
+for query in file_traversal_list:
+    sqli_leakage_num_tc  = sqli_leakage_num_tc + 1
+    if LOGS == "YES":
+        os.system(rm_log)
+        os.system(rs_nginx)
+    payload = {'q': query}
+    login = requests.get(jsurl,params=payload)
+    print("SQLi Leakage TC%d - response status_code: %d"%(sqli_leakage_num_tc,login.status_code))
+    time.sleep(0.5)
+    if LOGS == "YES":
+        logs = os.popen(rd_log + sqli_leakage_regex).read()
+        print("Logs:%s"%(logs))
+        c_logs = logs.replace('\n',' ')
+        f.write('TC%d,%d,%s\n'%(sqli_leakage_num_tc, login.status_code, c_logs))
+'''
 
 ##################################################################################################################
-#Part 4: Normal Traffic Testing
+#Part 6: Normal Traffic Testing
 print("")
 print("##################Normal Traffic Testing###################")
 
@@ -520,4 +592,3 @@ if LOGS == "YES":
 
 #End of testing
 print("Testing End...")
-
