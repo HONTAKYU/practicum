@@ -27,7 +27,7 @@ if (LOGS != "YES") and (LOGS != "NO"):
 
 #URLs for our WAF instances
 mod_url = 'http://54.183.15.129:80'
-aws_url = 'http://34.215.46.242:80'
+aws_url = 'http://juiceshoplb-767588180.us-west-2.elb.amazonaws.com'
 
 #Logs extraction regex
 mod_rd_log = "sudo cat /usr/local/nginx/conf/logs/modsec_audit.log"
