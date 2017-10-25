@@ -72,10 +72,11 @@
 3. Create another new EC2 instance (this time, set it to a different subnet in your VPC)
 4. Do the same commands as step 2
 5. Create an Application Load Balancer, using the 2 instances as targets with target port 3000
-6. Create a WebACL
-7. Create 2 rules - SQLi and XSS - include filters in the rules
-8. Assign the rules to the WebACL
-9. Associate the Application Load Balancer to the WebACL
+6. Used this link to deploy the WAF http://docs.aws.amazon.com/solutions/latest/aws-waf-security-automations/deployment.html
+  - This creates the WebACL and rules - I deleted everything except the XSS and SQLi rules
+  - This also creates a CloudFormation stack
+  - This also creates an S3 bucket to hold the web access logs
+7. Associate the Application Load Balancer to the WebACL
 
 ### RASP
 ---
