@@ -28,6 +28,8 @@ if (LOGS != "YES") and (LOGS != "NO"):
 #URLs for our WAF instances
 mod_url = 'http://54.183.15.129:80'
 aws_url = 'http://juiceshoplb-767588180.us-west-2.elb.amazonaws.com'
+mod_product_url = 'http://54.183.15.129/rest/product/search'
+aws_product_url = 'http://juiceshoplb-767588180.us-west-2.elb.amazonaws.com/rest/product/search'
 
 #Logs extraction regex
 mod_rd_log = "sudo cat /usr/local/nginx/conf/logs/modsec_audit.log"
@@ -43,6 +45,7 @@ mod_rs_nginx = "sudo service nginx restart"
 
 #Filling in parameters
 jsurl = ""
+product_url = ""
 instance_ip = ""
 rd_log = ""
 sql_regex = ""
@@ -63,8 +66,9 @@ if WAF_NAME == "modsecurity" :
     #6 different types of logs
     sql_regex = mod_sql_regex
     xss_regex = mod_xss_regex
+    product_url = mod_product_url
     format_string_regex = mod_normal_regex
-    file_traversal_regex = mod_rfi_regex
+    file_traversal_regex = mod_normal_regex
     normal_regex = mod_normal_regex
     sqli_leakage_regex = mod_sql_leakage_regex
     #log removal syntax
@@ -76,6 +80,7 @@ if WAF_NAME == "modsecurity" :
 
 if WAF_NAME == "aws_waf" :
     jsurl = aws_url
+    product_url = aws_product_url
     valid = 1
 
 if valid == 0:
@@ -172,7 +177,7 @@ for query in sqlget_query_list:
         os.system(rm_log)
         os.system(rs_nginx)
     payload = {'q': query}
-    login = requests.get(jsurl,params=payload)
+    login = requests.get(product_url,params=payload)
     print("SQL TC%d - response status_code: %d"%(sql_num_tc,login.status_code))
     time.sleep(0.5)
     if LOGS == "YES":
@@ -318,7 +323,7 @@ for query in query_list:
         os.system(rm_log)
         os.system(rs_nginx)
     payload = {'q': query}
-    login = requests.get(jsurl,params=payload)
+    login = requests.get(product_url,params=payload)
     print("XSS TC%d - response status_code: %d"%(xss_num_tc,login.status_code))
     time.sleep(0.5)
     if LOGS == "YES":
@@ -368,7 +373,7 @@ for query in format_query_list:
         os.system(rm_log)
         os.system(rs_nginx)
     payload = {'q': query}
-    login = requests.get(jsurl,params=payload)
+    login = requests.get(product_url,params=payload)
     print("Format String TC%d - response status_code: %d"%(format_string_num_tc,login.status_code))
     time.sleep(0.5)
     if LOGS == "YES":
@@ -380,7 +385,7 @@ for query in format_query_list:
 
 ##################################################################################################################
 #Part 4: RFI
-print("##################Remote File Inclusion###################")
+print("##################Local File Inclusion###################")
 
 #Record testing results into a file
 if LOGS == "YES":
@@ -402,7 +407,7 @@ for query in file_traversal_list:
         os.system(rm_log)
         os.system(rs_nginx)
     payload = {'q': query}
-    login = requests.get(jsurl,params=payload)
+    login = requests.get(product_url,params=payload)
     print("Remote File Inclusion TC%d - response status_code: %d"%(file_traversal_num_tc,login.status_code))
     time.sleep(0.5)
     if LOGS == "YES":
@@ -411,8 +416,9 @@ for query in file_traversal_list:
         c_logs = logs.replace('\n',' ')
         f.write('TC%d,%d,%s\n'%(file_traversal_num_tc, login.status_code, c_logs))
 
-'''
+
 ##################################################################################################################
+
 #Part 5: SQLi Leakage
 print("##################Sqli Leakage Testing###################")
 
@@ -422,29 +428,33 @@ if LOGS == "YES":
 #number of sqli test cases
 sqli_leakage_num_tc = 0
 
-sqli_leakage_list = []
-sqli_leakage_list.append('invalid\')) UNION SELECT NULL,email,email,id,NULL,NULL,NULL,NULL FROM USERS--') # TC1
-sqli_leakage_list.append('banana\' ORDER BY 100--') # TC2
-sqli_leakage_list.append('banana\' AND \'1\'=\'2') # TC3
-sqli_leakage_list.append('invalid\')) UNION SELECT 1,2,3 FROM USERS--') # TC4
-sqli_leakage_list.append('invalid\')) UNION SELECT 1,2,3 FROM WHOCARES--') # TC5
+sqlpost_username_list = []
+sqlpost_password_list = []
+sqlpost_username_list.append('admin@juice-sh.op\' union select') # TC1
+sqlpost_password_list.append('foo') 
+sqlpost_username_list.append('admin@juice-sh.op\' union select 1 from ') # TC33
+sqlpost_password_list.append('okay') 
 
-#Run the get queries one by one and record the logs
-for query in file_traversal_list:
-    sqli_leakage_num_tc  = sqli_leakage_num_tc + 1
+#Then, run the post queries one by one and record the logs
+for index, query in enumerate(sqlpost_username_list):
+    sqli_leakage_num_tc = sqli_leakage_num_tc + 1
     if LOGS == "YES":
         os.system(rm_log)
         os.system(rs_nginx)
-    payload = {'q': query}
-    login = requests.get(jsurl,params=payload)
-    print("SQLi Leakage TC%d - response status_code: %d"%(sqli_leakage_num_tc,login.status_code))
+    session = requests.Session()
+    auth = json.dumps({'email': sqlpost_username_list[index], 'password': sqlpost_password_list[index]})
+    login = session.post('{}/rest/user/login'.format(jsurl),
+                     headers={'Content-Type': 'application/json'},
+                     data=auth)
+
+    print("SQL TC%d - response status_code: %d"%(sqli_leakage_num_tc,login.status_code))
     time.sleep(0.5)
     if LOGS == "YES":
-        logs = os.popen(rd_log + sqli_leakage_regex).read()
+        logs = os.popen(rd_log+sqli_leakage_regex).read()
         print("Logs:%s"%(logs))
         c_logs = logs.replace('\n',' ')
-        f.write('TC%d,%d,%s\n'%(sqli_leakage_num_tc, login.status_code, c_logs))
-'''
+        f.write('TC%d,%d,%s\n'%(sqli_leakage_num_tc,login.status_code, c_logs))
+
 
 ##################################################################################################################
 #Part 6: Normal Traffic Testing
@@ -558,7 +568,7 @@ for query in normal_query_list:
         os.system(rm_log)
         os.system(rs_nginx)
     payload = {'q': query}
-    login = requests.get(jsurl,params=payload)
+    login = requests.get(product_url,params=payload)
     print("Normal TC%d - response status_code: %d"%(normal_num_tc,login.status_code))
     time.sleep(0.5)
     if LOGS == "YES":
